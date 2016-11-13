@@ -9,22 +9,22 @@ namespace CodeCave.CAD.Toolkit
         /// Extracts thumbnail to an image object.
         /// </summary>
         /// <param name="pathToFile">The path to file.</param>
-        /// <returns></returns>
+        /// <returns>Image object</returns>
         Image ExtractImage(string pathToFile);
 
         /// <summary>
         /// Extracts thumbnail to a stream.
         /// </summary>
         /// <param name="pathToFile">The path to file.</param>
-        /// <returns></returns>
+        /// <returns>Memory stream containing thumbnail data</returns>
         MemoryStream ExtractStream(string pathToFile);
 
         /// <summary>
-        /// Extracts thumbnail to an image file.
+        /// Tries to extract thumbnail to an image file.
         /// </summary>
         /// <param name="srcFile">The source file.</param>
-        /// <param name="outFile">The output file.</param>
-        /// <returns></returns>
-        bool ExtractFile(string srcFile, string outFile);
+        /// <param name="outFile">The output image file.</param>
+        /// <returns>true if thumbnail has been extracted successfully</returns>
+        bool TryExtractFile(string srcFile, string outFile);
     }
 }

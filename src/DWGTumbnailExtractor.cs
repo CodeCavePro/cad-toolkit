@@ -20,81 +20,88 @@ namespace CodeCave.CAD.Toolkit
         /// <returns></returns>
         public override Image ExtractImage(string pathToFile)
         {
-            using (var fileStream = new FileStream(pathToFile, FileMode.Open, FileAccess.Read, FileShare.Read))
+            try
             {
-                using (var binaryReader = new BinaryReader(fileStream))
+                using (var fileStream = new FileStream(pathToFile, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    fileStream.Seek(0xd, SeekOrigin.Begin);
-                    fileStream.Seek(0x14 + binaryReader.ReadInt32(), SeekOrigin.Begin);
-
-                    var byteCount = binaryReader.ReadByte();
-                    if (byteCount <= 1)
+                    using (var binaryReader = new BinaryReader(fileStream))
                     {
-                        return null;
-                    }
+                        fileStream.Seek(0xd, SeekOrigin.Begin);
+                        fileStream.Seek(0x14 + binaryReader.ReadInt32(), SeekOrigin.Begin);
 
-                    for (short i = 1; i <= byteCount; i++)
-                    {
-                        var imageCode = binaryReader.ReadByte();
-                        var imageHeaderStart = binaryReader.ReadInt32();
-                        var imageHeaderSize = binaryReader.ReadInt32();
-
-                        switch (imageCode)
+                        var byteCount = binaryReader.ReadByte();
+                        if (byteCount <= 1)
                         {
-                            case DwgFile.ThumbnailImageCodes.BMP:
+                            return null;
+                        }
 
-                                #region BMP Preview (2010 file format and lower)
+                        for (short i = 1; i <= byteCount; i++)
+                        {
+                            var imageCode = binaryReader.ReadByte();
+                            var imageHeaderStart = binaryReader.ReadInt32();
+                            var imageHeaderSize = binaryReader.ReadInt32();
 
-                                // BITMAPINFOHEADER (40 bytes)
-                                binaryReader.ReadBytes(0xe);
-                                var biBitCount = binaryReader.ReadUInt16();
-                                binaryReader.ReadBytes(4);
-                                var biSizeImage = binaryReader.ReadUInt32();
-                                //-----------------------------------------------------
-                                fileStream.Seek(imageHeaderStart, SeekOrigin.Begin);
-                                var bitmapBuffer = binaryReader.ReadBytes(imageHeaderSize);
-                                var colorTableSize = Convert.ToUInt32(Math.Truncate((biBitCount < 9) ? 4 * Math.Pow(2, biBitCount) : 0));
-                                using (var ms = new MemoryStream())
-                                {
-                                    using (var binaryWriter = new BinaryWriter(ms))
+                            switch (imageCode)
+                            {
+                                case DwgFile.ThumbnailImageCodes.BMP:
+
+                                    #region BMP Preview (2010 file format and lower)
+
+                                    // BITMAPINFOHEADER (40 bytes)
+                                    binaryReader.ReadBytes(0xe);
+                                    var biBitCount = binaryReader.ReadUInt16();
+                                    binaryReader.ReadBytes(4);
+                                    var biSizeImage = binaryReader.ReadUInt32();
+                                    //-----------------------------------------------------
+                                    fileStream.Seek(imageHeaderStart, SeekOrigin.Begin);
+                                    var bitmapBuffer = binaryReader.ReadBytes(imageHeaderSize);
+                                    var colorTableSize = Convert.ToUInt32(Math.Truncate((biBitCount < 9) ? 4 * Math.Pow(2, biBitCount) : 0));
+                                    using (var ms = new MemoryStream())
                                     {
-                                        binaryWriter.Write(Convert.ToUInt16(0x4d42));
-                                        binaryWriter.Write(54u + colorTableSize + biSizeImage);
-                                        binaryWriter.Write(new ushort());
-                                        binaryWriter.Write(new ushort());
-                                        binaryWriter.Write(54u + colorTableSize);
-                                        binaryWriter.Write(bitmapBuffer);
+                                        using (var binaryWriter = new BinaryWriter(ms))
+                                        {
+                                            binaryWriter.Write(Convert.ToUInt16(0x4d42));
+                                            binaryWriter.Write(54u + colorTableSize + biSizeImage);
+                                            binaryWriter.Write(new ushort());
+                                            binaryWriter.Write(new ushort());
+                                            binaryWriter.Write(54u + colorTableSize);
+                                            binaryWriter.Write(bitmapBuffer);
 
-                                        using (var imageTmp = new Bitmap(ms))
+                                            using (var imageTmp = new Bitmap(ms))
+                                            {
+                                                return imageTmp.Clone() as Image;
+                                            }
+                                        }
+                                    }
+
+                                    #endregion
+
+                                case DwgFile.ThumbnailImageCodes.PNG:
+
+                                    #region PNG Preview (2013 file format and higher)
+
+                                    fileStream.Seek(imageHeaderStart, SeekOrigin.Begin);
+                                    using (var ms = new MemoryStream())
+                                    {
+                                        fileStream.CopyTo(ms, imageHeaderStart);
+                                        using (var imageTmp = Image.FromStream(ms))
                                         {
                                             return imageTmp.Clone() as Image;
                                         }
                                     }
-                                }
 
-                            #endregion
+                                    #endregion
 
-                            case DwgFile.ThumbnailImageCodes.PNG:
-
-                                #region PNG Preview (2013 file format and higher)
-
-                                fileStream.Seek(imageHeaderStart, SeekOrigin.Begin);
-                                using (var ms = new MemoryStream())
-                                {
-                                    fileStream.CopyTo(ms, imageHeaderStart);
-                                    using (var imageTmp = Image.FromStream(ms))
-                                    {
-                                        return imageTmp.Clone() as Image;
-                                    }
-                                }
-
-                            #endregion
-
-                            case DwgFile.ThumbnailImageCodes.NULL:
-                                break; // DWG file doesn't contain a thumbnail
+                                case DwgFile.ThumbnailImageCodes.NULL:
+                                    break; // DWG file doesn't contain a thumbnail
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidDataException($"Failed to extract the thumbnail of the following CAD drawing: {pathToFile}", ex);
             }
 
             return null;
