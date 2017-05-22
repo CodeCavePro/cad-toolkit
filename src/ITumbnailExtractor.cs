@@ -1,8 +1,11 @@
-﻿using System.Drawing;
-using System.IO;
+﻿using System.IO;
 
 namespace CodeCave.CAD.Toolkit
 {
+    /// <summary>
+    /// Defines methods of thumbnail extractor object,
+    /// which is supposed to extract thumbnails from 3D models without relying on proprietary APIs
+    /// </summary>
     public interface IThumbnailExtractor
     {
         /// <summary>
@@ -10,7 +13,7 @@ namespace CodeCave.CAD.Toolkit
         /// </summary>
         /// <param name="pathToFile">The path to file.</param>
         /// <returns>Image object</returns>
-        Image ExtractImage(string pathToFile);
+        byte[] ExtractImageBytes(string pathToFile);
 
         /// <summary>
         /// Extracts thumbnail to a stream.

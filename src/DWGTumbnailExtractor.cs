@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 
 namespace CodeCave.CAD.Toolkit
@@ -11,14 +12,17 @@ namespace CodeCave.CAD.Toolkit
     /// http://www.theswamp.org/index.php?topic=45598.msg507524#msg507524
     /// However some heavy changes have been applied
     /// </summary>
-    public class DWGTumbnailExtractor : ThumbnailExtractor
+    public class DwgTumbnailExtractor : ThumbnailExtractor
     {
         /// <summary>
-        /// Extracts thumbnail to an image object.
+        /// Extracts thumbnail to a stream.
         /// </summary>
         /// <param name="pathToFile">The path to file.</param>
-        /// <returns></returns>
-        public override Image ExtractImage(string pathToFile)
+        /// <returns>
+        /// Memory stream containing thumbnail data
+        /// </returns>
+        /// <exception cref="InvalidDataException"></exception>
+        public override MemoryStream ExtractStream(string pathToFile)
         {
             try
             {
@@ -40,6 +44,7 @@ namespace CodeCave.CAD.Toolkit
                             var imageCode = binaryReader.ReadByte();
                             var imageHeaderStart = binaryReader.ReadInt32();
                             var imageHeaderSize = binaryReader.ReadInt32();
+                            var outms = new MemoryStream();
 
                             switch (imageCode)
                             {
@@ -69,7 +74,9 @@ namespace CodeCave.CAD.Toolkit
 
                                             using (var imageTmp = new Bitmap(ms))
                                             {
-                                                return imageTmp.Clone() as Image;
+
+                                                imageTmp.Save(ms, ImageFormat.Png);
+                                                return outms;
                                             }
                                         }
                                     }
@@ -81,14 +88,8 @@ namespace CodeCave.CAD.Toolkit
                                     #region PNG Preview (2013 file format and higher)
 
                                     fileStream.Seek(imageHeaderStart, SeekOrigin.Begin);
-                                    using (var ms = new MemoryStream())
-                                    {
-                                        fileStream.CopyTo(ms, imageHeaderStart);
-                                        using (var imageTmp = Image.FromStream(ms))
-                                        {
-                                            return imageTmp.Clone() as Image;
-                                        }
-                                    }
+                                    fileStream.CopyTo(outms, imageHeaderStart);
+                                    return outms;
 
                                     #endregion
 

@@ -5,38 +5,11 @@ using System.IO;
 namespace CodeCave.CAD.Toolkit
 {
     /// <summary>
-    /// Thumbnail extractor
+    /// Extracts thumbnails from 3D models without relying on proprietary APIs
     /// </summary>
     /// <seealso cref="IThumbnailExtractor" />
     public abstract class ThumbnailExtractor : IThumbnailExtractor
-	{
-
-        /// <summary>
-        /// Extracts thumbnail to a stream.
-        /// </summary>
-        /// <param name="pathToFile">The path to file.</param>
-        /// <returns>
-        /// Memory stream containing thumbnail data
-        /// </returns>
-        /// <exception cref="InvalidDataException"></exception>
-        public virtual MemoryStream ExtractStream(string pathToFile)
-		{
-			var image = ExtractImage(pathToFile);
-
-		    try
-		    {
-		        var stream = new MemoryStream();
-		        image.Save(stream, image.RawFormat);
-		        stream.Position = 0;
-		        return stream;
-		    }
-		    catch (Exception ex)
-		    {
-                throw new InvalidDataException($"", ex);
-		    }
-		}
-
-
+    {
         /// <summary>
         /// Extracts thumbnail to an image file.
         /// </summary>
@@ -47,12 +20,19 @@ namespace CodeCave.CAD.Toolkit
         /// </returns>
         /// <exception cref="InvalidDataException">Failed to extract to extract thumbnail from \"{srcFile}\" to \"{outFile}\</exception>
         public virtual bool TryExtractFile(string srcFile, string outFile)
-		{
-			var image = ExtractImage(srcFile);
+        {
+            var imageBytes = ExtractImageBytes(srcFile);
 
             try
             {
-                image.Save(outFile);
+                using (var ms = new MemoryStream(imageBytes))
+                {
+                    using (var imageTmp = Image.FromStream(ms))
+                    {
+                        imageTmp.Save(outFile);
+                    }
+                }
+
                 return File.Exists(outFile);
             }
             catch (Exception ex)
@@ -65,9 +45,22 @@ namespace CodeCave.CAD.Toolkit
         /// Extracts thumbnail to an image object.
         /// </summary>
         /// <param name="pathToFile">The path to file.</param>
+        /// <returns></returns>
+        public virtual byte[] ExtractImageBytes(string pathToFile)
+        {
+            using (var imageStream = ExtractStream(pathToFile))
+            {
+                return imageStream.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Extracts thumbnail to a stream.
+        /// </summary>
+        /// <param name="pathToFile">The path to file.</param>
         /// <returns>
-        /// Image object
+        /// Memory stream containing thumbnail data
         /// </returns>
-        public abstract Image ExtractImage(string pathToFile);
-	}
+        public abstract MemoryStream ExtractStream(string pathToFile);
+    }
 }
