@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>CodeCave.CAD.Toolkit.NetFramework</id>
+    <version>1.2.0-beta</version>
+    <language>en-US</language>
+    <title>CAD.Toolkit.NetFramework</title>
+    <authors>Zhmayev Yaroslav</authors>
+    <owners>salaros, CodeCave</owners>
+    <copyright>Copyright 2016 (c) CodeCave, PUE</copyright>
+    <summary>
+      A toolkit for processing .dwg, .dxf etc without AutoCAD or RealDWG
+    </summary>
+    <description>
+      A toolkit for processing .dwg, .dxf etc without AutoCAD or RealDWG
+    </description>
+    <releaseNotes></releaseNotes>
+    <projectUrl>https://nuget.org/packages/CAD.Toolkit</projectUrl>
+    <licenseUrl>https://www.gnu.org/licenses/lgpl-3.0.en.html</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <dependencies></dependencies>
+    <references></references>
+    <tags></tags>
+  </metadata>
+</package>
