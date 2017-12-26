@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.6;netstandard2.0;net40;net452;net47</TargetFrameworks>
+    <RuntimeFrameworkVersion>2.0.3</RuntimeFrameworkVersion>
+    <Description>A toolkit for processing .dwg, .dxf etc without AutoCAD or RealDWG</Description>
+    <Product>CAD.Toolkit</Product>
+    <AssemblyName>CAD.Toolkit</AssemblyName>
+    <PackageId>CodeCave.CAD.Toolkit</PackageId>
+    <RootNamespace>CodeCave.CAD.Toolkit</RootNamespace>
+    <Version>1.3.0-beta</Version>
+    <AssemblyVersion>1.3.0.0</AssemblyVersion>
+    <FileVersion>1.3.0.0</FileVersion>
+    <Company>CodeCave, PUE</Company>
+    <Authors>Zhmayev Yaroslav aka Salaros</Authors>
+    <Copyright>Copyright 2017 (c) CodeCave, PUE</Copyright>
+    <NeutralLanguage>en</NeutralLanguage>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageTags>cad, autocad, thumbnails, dwg, realdwg</PackageTags>
+    <PackageLicenseUrl>https://github.com/CodeCavePro/cad-toolkit/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/CodeCavePro/cad-toolkit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CodeCavePro/cad-toolkit</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\bin\Release\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DocumentationFile></DocumentationFile>
+    <NoWarn>1701;1702;1705</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="CAD.Toolkit.Primitives.csproj.DotSettings" />
+    <None Remove="Toolkit.Primitives.csproj.DotSettings" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CodeCave.CAD.Toolkit.Primitives" Version="1.0.5.14" />
+    <PackageReference Include="CoreCompat.System.Drawing" Version="1.0.0-beta006 " Condition="'$(TargetFramework)' == 'netstandard1.6'" />
+    <PackageReference Include="System.Drawing.Common" Version="4.5.0-preview1-25914-04" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+  </ItemGroup>
+
+  <Target Name="CleanNuGetFiles" AfterTargets="Clean">
+    <ItemGroup>
+      <NuGetFilesBin Include="$(OutputPath)\..\*.nupkg" />
+    </ItemGroup>
+    <Message Text="Deleting NuGet files from $(OutputPath)\..\*.nupkg" Importance="high" />
+    <Delete Files="@(NuGetFilesBin)" />
+    <Delete Files="@(NuGetFilesProject)" />
+  </Target>
+</Project>
